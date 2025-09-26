@@ -1,7 +1,7 @@
 .kanban {
     display: flex;
     padding: 30px;
-    width: 750 px;
+    width: 750px;
     background: rgb(24, 221, 155);
     border-radius: 5px;
 }
@@ -33,13 +33,13 @@
 }
 
 .kanban__dropzone {
-    height: 10px;
+    height: 20px;
     transition: background 0.15s, height 0.15s;
 }
 
-.kanban__dropzone.active {
+.kanban__dropzone-active {
     background: rgba(0, 0, 0, 0.25); 
-    height: 20px;
+    height: 40px;
 }
 
 .kanban__add-item {

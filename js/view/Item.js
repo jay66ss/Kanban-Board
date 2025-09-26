@@ -1,7 +1,10 @@
 import KanbanAPI from "../api/KanbanAPI.js";
+import DropZone from "./DropZone.js";
 
 export default class Item {
     constructor(id, content) {
+        const bottomDropZone = DropZone.createDropZone();
+        
         this.elements = {};
         this.elements.root = Item.createRoot();
         this.elements.input = this.elements.root.querySelector(".kanban__item-input");
@@ -11,6 +14,8 @@ export default class Item {
 
         // We need a reference for the current content value
         this.content = content;
+
+        this.elements.root.appendChild(bottomDropZone);
 
         // We want the user to have the ability of updating the content of an item
         // User clicks on the content to edit it and then clicks away -> onBlur event
@@ -44,6 +49,15 @@ export default class Item {
                 this.elements.root.parentElement.removeChild(this.elements.root); // We're going to the parents (the column) and we say: lets remove the child elements of this element
 
             }
+        });
+
+        // Drag and Drop functionality
+        this.elements.root.addEventListener("dragstart", e => {
+            e.dataTransfer.setData("text/plain", id); // We set the data that we want to transfer. In this case, the ID of the item (it gets attached)
+            
+        });
+        this.elements.input.addEventListener("drop", e => {
+            e.preventDefault(); // We prevent the default behavior of the browser (as for example, displaying the Id when dragging, copy and paste, etc)
         });
     }
 
