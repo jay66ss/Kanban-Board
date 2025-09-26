@@ -1,4 +1,3 @@
-// server.js (cópialo entero y reemplaza el anterior)
 import express from "express";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
@@ -52,16 +51,29 @@ app.post("/items", async (req, res) => {
   res.json({ id: result.lastID, content, columnId, position });
 });
 
+// PUT actualizar item
 app.put("/items/:id", async (req, res) => {
   const { content, columnId, position } = req.body;
-  await db.run("UPDATE items SET content = ?, columnId = ?, position = ? WHERE id = ?", content, columnId, position, req.params.id);
+
+  const item = await db.get("SELECT * FROM items WHERE id = ?", req.params.id);
+  if (!item) return res.status(404).json({ error: "Item not found" });
+
+  await db.run(
+    "UPDATE items SET content = ?, columnId = ?, position = ? WHERE id = ?",
+    content, columnId, position, req.params.id
+  );
   res.json({ success: true });
 });
 
+// DELETE item
 app.delete("/items/:id", async (req, res) => {
+  const item = await db.get("SELECT * FROM items WHERE id = ?", req.params.id);
+  if (!item) return res.status(404).json({ error: "Item not found" });
+
   await db.run("DELETE FROM items WHERE id = ?", req.params.id);
   res.json({ success: true });
 });
+
 
 // Ruta raíz explícita (para evitar 404 en /)
 app.get("/", (req, res) => {
@@ -75,4 +87,3 @@ app.use((req, res) => {
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
-// Ahora puedes acceder a tu frontend en http://localhost:5500 y a la API en http://localhost:3000

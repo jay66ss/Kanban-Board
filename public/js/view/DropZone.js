@@ -20,7 +20,6 @@ export default class DropZone {
         });
 
         // Drop
-        // Drop
 dropZone.addEventListener("drop", async e => {
     e.preventDefault();
     dropZone.classList.remove("kanban__dropzone-active");
