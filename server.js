@@ -47,13 +47,35 @@ app.get("/items/:columnId", async (req, res) => {
 
 app.post("/items", async (req, res) => {
   const { content, columnId, position } = req.body;
-  const result = await db.run("INSERT INTO items (content, columnId, position) VALUES (?, ?, ?)", content, columnId, position);
-  res.json({ id: result.lastID, content, columnId, position });
+
+  // VALIDACIÓN
+  if (!content || columnId === undefined || position === undefined) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  if (typeof columnId !== "number" || typeof position !== "number") {
+    return res.status(400).json({ error: "columnId and position must be numbers" });
+  }
+
+  const result = await db.run(
+    "INSERT INTO items (content, columnId, position) VALUES (?, ?, ?)",
+    content, columnId, position
+  );
+
+  res.status(201).json({ id: result.lastID, content, columnId, position });
 });
+
 
 // PUT actualizar item
 app.put("/items/:id", async (req, res) => {
   const { content, columnId, position } = req.body;
+
+  // VALIDACIÓN
+  if (!content || columnId === undefined || position === undefined) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  if (typeof columnId !== "number" || typeof position !== "number") {
+    return res.status(400).json({ error: "columnId and position must be numbers" });
+  }
 
   const item = await db.get("SELECT * FROM items WHERE id = ?", req.params.id);
   if (!item) return res.status(404).json({ error: "Item not found" });
@@ -62,8 +84,10 @@ app.put("/items/:id", async (req, res) => {
     "UPDATE items SET content = ?, columnId = ?, position = ? WHERE id = ?",
     content, columnId, position, req.params.id
   );
+
   res.json({ success: true });
 });
+
 
 // DELETE item
 app.delete("/items/:id", async (req, res) => {
