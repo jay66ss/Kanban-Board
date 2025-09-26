@@ -32,9 +32,6 @@ export default class Item {
                 content: this.content
             });
         
-        
-            console.log(this.content); //Log the old and new content
-            console.log(newContent);
             
         }; 
 
