@@ -1,0 +1,36 @@
+name: Kanban CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run backend tests
+        run: npm test
+
+      - name: Run frontend tests
+        run: npx jest --config jest.frontend.config.js
+
+      # Opcional: despliegue automático si tests pasan
+      # - name: Deploy to Resizes Dash
+      #   uses: some/resizes-deploy-action@v1
+      #   with:
+      #     api-key: ${{ secrets.RESIZES_API_KEY }}
+      #     project-path: ./frontend
