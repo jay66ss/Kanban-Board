@@ -4,37 +4,43 @@ import DropZone from "./DropZone.js";
 
 export default class Column {
     constructor(id, title) {
-        // Constructor logic 
         const topDropZone = DropZone.createDropZone();
-
 
         this.elements = {};
         this.elements.root = Column.createRoot();
         this.elements.title = this.elements.root.querySelector(".kanban__column-title");
         this.elements.items = this.elements.root.querySelector(".kanban__column-items");
         this.elements.addItem = this.elements.root.querySelector(".kanban__add-item");
-       
+
         // Display the name of the column and its unique ID
         this.elements.root.dataset.id = id;
         this.elements.title.textContent = title;
         this.elements.items.appendChild(topDropZone);
 
-        // When the user clicks on the Add button, we want to create a new item in that column
+        // Click handler para añadir items
+        this.elements.addItem.addEventListener("click", async () => {
+            try {
+                const columnId = Number(id); // fuerza a número
+                const newItem = await KanbanAPI.insertItem(columnId, "", 0); // posición inicial 0
+                this.renderItem(newItem);
+            } catch (error) {
+                console.error("Error adding item:", error);
+            }
+        });
 
-       this.elements.addItem.addEventListener("click", async () => {
-            const newItem = await KanbanAPI.insertItem(id, "");
-            this.renderItem(newItem);
-});
-
-
+        // Cargar items existentes
         (async () => {
-             const items = await KanbanAPI.getItems(id);
-            items.forEach(item => this.renderItem(item));
+            try {
+                const columnId = Number(id);
+                const items = await KanbanAPI.getItems(columnId);
+                items.forEach(item => this.renderItem(item));
+            } catch (error) {
+                console.error("Error loading items:", error);
+            }
         })();
     }
 
     static createRoot() {
-        // Returns an HTML element as an object containing the basic structure of a column
         const range = document.createRange();
         range.selectNode(document.body);
         return range.createContextualFragment(`
@@ -46,7 +52,7 @@ export default class Column {
         `).children[0];
     }
 
-    renderItem(data){
+    renderItem(data) {
         const item = new Item(data.id, data.content);
         this.elements.items.appendChild(item.elements.root);
     }

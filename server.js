@@ -44,38 +44,48 @@ async function initDBAndServer() {
     res.json(items);
   });
 
-  app.post("/items", async (req, res) => {
-    const { content, columnId, position } = req.body;
-    if (!content || columnId === undefined || position === undefined) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-    if (typeof columnId !== "number" || typeof position !== "number") {
-      return res.status(400).json({ error: "columnId and position must be numbers" });
-    }
-    const result = await db.run(
-      "INSERT INTO items (content, columnId, position) VALUES (?, ?, ?)",
-      content, columnId, position
-    );
-    res.status(201).json({ id: result.lastID, content, columnId, position });
-  });
+  // POST /items
+app.post("/items", async (req, res) => {
+  const { content, columnId, position } = req.body;
 
-  app.put("/items/:id", async (req, res) => {
-    const { content, columnId, position } = req.body;
-    if (!content || columnId === undefined || position === undefined) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-    if (typeof columnId !== "number" || typeof position !== "number") {
-      return res.status(400).json({ error: "columnId and position must be numbers" });
-    }
-    const item = await db.get("SELECT * FROM items WHERE id = ?", req.params.id);
-    if (!item) return res.status(404).json({ error: "Item not found" });
+  if (columnId === undefined || position === undefined) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  if (typeof columnId !== "number" || typeof position !== "number") {
+    return res.status(400).json({ error: "columnId and position must be numbers" });
+  }
 
-    await db.run(
-      "UPDATE items SET content = ?, columnId = ?, position = ? WHERE id = ?",
-      content, columnId, position, req.params.id
-    );
-    res.json({ success: true });
-  });
+  // content vacío ahora es válido
+  const result = await db.run(
+    "INSERT INTO items (content, columnId, position) VALUES (?, ?, ?)",
+    content ?? "", columnId, position
+  );
+
+  res.status(201).json({ id: result.lastID, content: content ?? "", columnId, position });
+});
+
+// PUT /items/:id
+app.put("/items/:id", async (req, res) => {
+  const { content, columnId, position } = req.body;
+
+  if (columnId === undefined || position === undefined) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  if (typeof columnId !== "number" || typeof position !== "number") {
+    return res.status(400).json({ error: "columnId and position must be numbers" });
+  }
+
+  const item = await db.get("SELECT * FROM items WHERE id = ?", req.params.id);
+  if (!item) return res.status(404).json({ error: "Item not found" });
+
+  await db.run(
+    "UPDATE items SET content = ?, columnId = ?, position = ? WHERE id = ?",
+    content ?? "", columnId, position, req.params.id
+  );
+
+  res.json({ success: true });
+});
+
 
   app.delete("/items/:id", async (req, res) => {
     const item = await db.get("SELECT * FROM items WHERE id = ?", req.params.id);

@@ -7,15 +7,17 @@ export default class KanbanAPI {
         return await res.json();
     }
 
-    static async insertItem(columnId, content) {
+  // KanbanAPI.js
+    static async insertItem(columnId, content, position = 0) { // position opcional, default 0
         const res = await fetch("http://localhost:3000/items", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content, columnId, position: 0 })
+            body: JSON.stringify({ content, columnId, position })
         });
         if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
         return await res.json();
     }
+
 
     static async updateItem(itemId, newProps) {
         const res = await fetch(`http://localhost:3000/items/${itemId}`, {
