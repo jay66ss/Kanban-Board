@@ -3,6 +3,7 @@ export default class KanbanAPI {
     
     static async getItems(columnId) {
         const res = await fetch(`http://localhost:3000/items/${columnId}`);
+        if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
         return await res.json();
     }
 
@@ -12,20 +13,25 @@ export default class KanbanAPI {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ content, columnId, position: 0 })
         });
+        if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
         return await res.json();
     }
 
     static async updateItem(itemId, newProps) {
-        await fetch(`http://localhost:3000/items/${itemId}`, {
+        const res = await fetch(`http://localhost:3000/items/${itemId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newProps)
         });
+        if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
+        return await res.json();
     }
 
     static async deleteItem(itemId) {
-        await fetch(`http://localhost:3000/items/${itemId}`, {
+        const res = await fetch(`http://localhost:3000/items/${itemId}`, {
             method: "DELETE"
         });
+        if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
+        return await res.json();
     }
 }
