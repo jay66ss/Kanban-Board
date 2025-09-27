@@ -24,5 +24,5 @@ Each item has “dropzones” above and below to help place it exactly where you
 Modern browser with ES6 Module support (Safari, Firefox, Edge, or Google Chrome).
 
 -Dependencies: 
-npm init -y
-npm install express sqlite3 sqlite cors
+npm install
+node server.js
