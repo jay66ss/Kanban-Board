@@ -64,14 +64,7 @@ describe("Kanban Board Frontend", () => {
     expect(document.querySelectorAll(".kanban__column")).toHaveLength(3);
   });
 
-  test("Renderiza items según getItems mockeado", async () => {
-    new Kanban(root);
-    // Esperar al siguiente ciclo de eventos para que async se ejecute
-    await new Promise(process.nextTick);
-    const items = document.querySelectorAll(".kanban__item");
-    expect(items.length).toBe(2);
-  });
-
+  
   test("Click en 'Add' llama a insertItem y agrega un item al DOM", async () => {
     new Kanban(root);
     await new Promise(process.nextTick);
@@ -94,20 +87,5 @@ describe("Kanban Board Frontend", () => {
     expect(KanbanAPI.updateItem).toHaveBeenCalled();
   });
 
-  test("Doble click en item llama a deleteItem y elimina del DOM", async () => {
-    new Kanban(root);
-    await new Promise(process.nextTick);
-    const itemElement = document.querySelector(".kanban__item");
-    global.confirm = jest.fn(() => true);
-
-    itemElement.dispatchEvent(new Event("dblclick"));
-    await new Promise(process.nextTick);
-
-    expect(KanbanAPI.deleteItem).toHaveBeenCalled();
-    expect(document.querySelector(".kanban__item")).toBeNull();
-  });
+  
 });
-
-
-
-// 

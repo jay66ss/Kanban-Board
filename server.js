@@ -12,106 +12,91 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- Logging middleware para ver todas las peticiones ---
+// --- Logging middleware ---
 app.use((req, res, next) => {
   console.log(new Date().toISOString(), req.method, req.url);
   next();
 });
 
-// Servir archivos estáticos desde /public
+// Servir archivos estáticos
 const publicPath = path.join(__dirname, "public");
-console.log("Serving static files from:", publicPath);
 app.use(express.static(publicPath));
 
-// Conexión a SQLite (async top-level)
-const db = await open({
-  filename: path.join(__dirname, "kanban.db"),
-  driver: sqlite3.Database
-});
+async function initDBAndServer() {
+  // Conexión a SQLite
+  const db = await open({
+    filename: path.join(__dirname, "kanban.db"),
+    driver: sqlite3.Database
+  });
 
-await db.run(`
-  CREATE TABLE IF NOT EXISTS items (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    content TEXT,
-    columnId INTEGER,
-    position INTEGER
-  )
-`);
+  await db.run(`
+    CREATE TABLE IF NOT EXISTS items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      content TEXT,
+      columnId INTEGER,
+      position INTEGER
+    )
+  `);
 
-// Rutas API
-app.get("/items/:columnId", async (req, res) => {
-  const columnId = req.params.columnId;
-  const items = await db.all("SELECT * FROM items WHERE columnId = ? ORDER BY position", columnId);
-  res.json(items);
-});
+  // Rutas API
+  app.get("/items/:columnId", async (req, res) => {
+    const columnId = req.params.columnId;
+    const items = await db.all("SELECT * FROM items WHERE columnId = ? ORDER BY position", columnId);
+    res.json(items);
+  });
 
-app.post("/items", async (req, res) => {
-  const { content, columnId, position } = req.body;
+  app.post("/items", async (req, res) => {
+    const { content, columnId, position } = req.body;
+    if (!content || columnId === undefined || position === undefined) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+    if (typeof columnId !== "number" || typeof position !== "number") {
+      return res.status(400).json({ error: "columnId and position must be numbers" });
+    }
+    const result = await db.run(
+      "INSERT INTO items (content, columnId, position) VALUES (?, ?, ?)",
+      content, columnId, position
+    );
+    res.status(201).json({ id: result.lastID, content, columnId, position });
+  });
 
-  // VALIDACIÓN
-  if (!content || columnId === undefined || position === undefined) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-  if (typeof columnId !== "number" || typeof position !== "number") {
-    return res.status(400).json({ error: "columnId and position must be numbers" });
-  }
+  app.put("/items/:id", async (req, res) => {
+    const { content, columnId, position } = req.body;
+    if (!content || columnId === undefined || position === undefined) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+    if (typeof columnId !== "number" || typeof position !== "number") {
+      return res.status(400).json({ error: "columnId and position must be numbers" });
+    }
+    const item = await db.get("SELECT * FROM items WHERE id = ?", req.params.id);
+    if (!item) return res.status(404).json({ error: "Item not found" });
 
-  const result = await db.run(
-    "INSERT INTO items (content, columnId, position) VALUES (?, ?, ?)",
-    content, columnId, position
-  );
+    await db.run(
+      "UPDATE items SET content = ?, columnId = ?, position = ? WHERE id = ?",
+      content, columnId, position, req.params.id
+    );
+    res.json({ success: true });
+  });
 
-  res.status(201).json({ id: result.lastID, content, columnId, position });
-});
+  app.delete("/items/:id", async (req, res) => {
+    const item = await db.get("SELECT * FROM items WHERE id = ?", req.params.id);
+    if (!item) return res.status(404).json({ error: "Item not found" });
 
+    await db.run("DELETE FROM items WHERE id = ?", req.params.id);
+    res.json({ success: true });
+  });
 
-// PUT actualizar item
-app.put("/items/:id", async (req, res) => {
-  const { content, columnId, position } = req.body;
+  app.get("/", (req, res) => res.sendFile(path.join(publicPath, "index.html")));
+  app.use((req, res) => res.status(404).json({ error: "Not Found", path: req.path }));
 
-  // VALIDACIÓN
-  if (!content || columnId === undefined || position === undefined) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-  if (typeof columnId !== "number" || typeof position !== "number") {
-    return res.status(400).json({ error: "columnId and position must be numbers" });
-  }
+  // Iniciar server
+  const port = process.env.PORT || 3000;
+  app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
 
-  const item = await db.get("SELECT * FROM items WHERE id = ?", req.params.id);
-  if (!item) return res.status(404).json({ error: "Item not found" });
+  return db;
+}
 
-  await db.run(
-    "UPDATE items SET content = ?, columnId = ?, position = ? WHERE id = ?",
-    content, columnId, position, req.params.id
-  );
+// Inicializar DB y servidor
+const db = await initDBAndServer();
 
-  res.json({ success: true });
-});
-
-
-// DELETE item
-app.delete("/items/:id", async (req, res) => {
-  const item = await db.get("SELECT * FROM items WHERE id = ?", req.params.id);
-  if (!item) return res.status(404).json({ error: "Item not found" });
-
-  await db.run("DELETE FROM items WHERE id = ?", req.params.id);
-  res.json({ success: true });
-});
-
-
-// Ruta raíz explícita (para evitar 404 en /)
-app.get("/", (req, res) => {
-  res.sendFile(path.join(publicPath, "index.html"));
-});
-
-// Catch-all para rutas no encontradas (para depuración)
-app.use((req, res) => {
-  res.status(404).json({ error: "Not Found", path: req.path });
-});
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
-
-
-// Tests
 export default app;

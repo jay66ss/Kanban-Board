@@ -28,9 +28,5 @@ jobs:
       - name: Run frontend tests
         run: npx jest --config jest.frontend.config.js
 
-      # Opcional: despliegue automático si tests pasan
-      # - name: Deploy to Resizes Dash
-      #   uses: some/resizes-deploy-action@v1
-      #   with:
-      #     api-key: ${{ secrets.RESIZES_API_KEY }}
-      #     project-path: ./frontend
+      - name: Run linting
+        run: npm run lint
