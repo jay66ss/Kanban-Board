@@ -12,7 +12,7 @@ describe("Kanban API", () => {
       .post("/items")
       .send({ content: "Test item", columnId: 1, position: 0 });
 
-    expect(res.statusCode).toBe(201); // ahora 201 Created
+    expect(res.statusCode).toBe(201); 
     expect(res.body).toHaveProperty("id");
     expect(res.body.content).toBe("Test item");
     expect(res.body.columnId).toBe(1);
@@ -23,7 +23,7 @@ describe("Kanban API", () => {
   test("POST /items falla si faltan campos requeridos", async () => {
     const res = await supertest(app)
       .post("/items")
-      .send({ content: "Incomplete" }); // falta columnId y position
+      .send({ content: "Incomplete" }); // columnId and position missing
 
     expect(res.statusCode).toBe(400);
     expect(res.body).toHaveProperty("error");
@@ -102,25 +102,22 @@ describe("Kanban API", () => {
     expect(res.body).toHaveProperty("error", "Item not found");
   });
 
-  // --------- INTEGRACIÓN: mover items y comprobar orden ----------
+  
   test("Mover item de columna y comprobar posición", async () => {
-    // Creamos dos items en columna 1
     const res1 = await supertest(app).post("/items").send({ content: "Item A", columnId: 1, position: 0 });
     const res2 = await supertest(app).post("/items").send({ content: "Item B", columnId: 1, position: 1 });
     const idA = res1.body.id;
     const idB = res2.body.id;
 
-    // Movemos Item A a columna 3 y cambiamos posición
     await supertest(app).put(`/items/${idA}`).send({ content: "Item A", columnId: 3, position: 0 });
 
     const col1 = await supertest(app).get("/items/1");
     const col3 = await supertest(app).get("/items/3");
 
-    // Comprobamos existencia y posiciones
+
     expect(col1.body.some(i => i.id === idA)).toBe(false);
     expect(col3.body.find(i => i.id === idA).position).toBe(0);
 
-    // Limpiamos
     await supertest(app).delete(`/items/${idA}`);
     await supertest(app).delete(`/items/${idB}`);
   });

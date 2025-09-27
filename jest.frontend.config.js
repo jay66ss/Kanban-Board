@@ -1,5 +1,5 @@
 export default {
-  testEnvironment: "jsdom",  // necesario para simular DOM en Node
+  testEnvironment: "jsdom",  // necessary to simulate a browser environment
   transform: {},
   moduleFileExtensions: ["js", "json", "node"],
   setupFiles: [],

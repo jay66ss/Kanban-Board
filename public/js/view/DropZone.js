@@ -31,7 +31,7 @@ dropZone.addEventListener("drop", async e => {
 
     if (droppedItemElement.contains(dropZone)) return;
 
-    // Determinar dónde insertar
+    // Determine where to insert the dropped item
     let referenceNode;
     if (dropZone.parentElement.classList.contains("kanban__item")) {
         referenceNode = dropZone.parentElement.nextSibling;
@@ -42,7 +42,7 @@ dropZone.addEventListener("drop", async e => {
     columnElement.querySelector(".kanban__column-items")
         .insertBefore(droppedItemElement, referenceNode);
 
-    // Recalcular posición real según items visibles
+    // Obtain the real position based on the new order of items in the column
     const items = Array.from(columnElement.querySelectorAll(".kanban__item"));
     const newPosition = items.indexOf(droppedItemElement);
 

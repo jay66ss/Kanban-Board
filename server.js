@@ -18,12 +18,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Servir archivos estáticos
 const publicPath = path.join(__dirname, "public");
 app.use(express.static(publicPath));
 
 async function initDBAndServer() {
-  // Conexión a SQLite
+  // SQLite DB
   const db = await open({
     filename: path.join(__dirname, "kanban.db"),
     driver: sqlite3.Database
@@ -89,14 +88,14 @@ async function initDBAndServer() {
   app.get("/", (req, res) => res.sendFile(path.join(publicPath, "index.html")));
   app.use((req, res) => res.status(404).json({ error: "Not Found", path: req.path }));
 
-  // Iniciar server
+  
   const port = process.env.PORT || 3000;
   app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
 
   return db;
 }
 
-// Inicializar DB y servidor
+
 const db = await initDBAndServer();
 
 export default app;

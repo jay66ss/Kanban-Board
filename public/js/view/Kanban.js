@@ -7,7 +7,7 @@ export default class Kanban {
 
         Kanban.columns().forEach(column => {
             const columnView = new Column(column.id, column.title);
-            this.root.appendChild(columnView.elements.root); // Toma el HTML de la columna y lo añade al contenedor principal del tablero Kanban
+            this.root.appendChild(columnView.elements.root); // Adds the column to the main Kanban board
 
 
         });

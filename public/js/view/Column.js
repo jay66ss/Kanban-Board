@@ -4,8 +4,7 @@ import DropZone from "./DropZone.js";
 
 export default class Column {
     constructor(id, title) {
-        // Constructor logic here
-
+        // Constructor logic 
         const topDropZone = DropZone.createDropZone();
 
 
